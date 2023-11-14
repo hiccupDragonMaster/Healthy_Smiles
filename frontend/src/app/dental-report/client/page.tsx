@@ -7,18 +7,39 @@ import SelectClient from '@/components/dental-report/client/SelectClient';
 import SelectedClient from '@/components/dental-report/client/SelectedCllient';
 import NewClient from '@/components/dental-report/client/NewClient';
 import AddPet from '@/components/pet/AddPet';
-import { Client } from '@/types/Client';
+import { AddClientType, Client } from '@/types/Client';
 import { Button } from 'flowbite-react';
+import { AddPetType, ResponsePetType } from '@/types/Pet';
+
+import { addClient } from '@/api/client';
+import { searchClient } from '@/api/search';
+import { addNewPet, selectedClientPet } from '@/api/pet';
 
 const ClientDentalReport = () => {
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
     const [createClient, setCreateClient] = useState(false);
     const [createPet, setCreatePet] = useState(false);
     const [clients, setClients] = useState<Client[]>([]);
+    const [pets, setPets] = useState<ResponsePetType[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoadingClients, setisLoadingClients] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isLogged, setIsLogged] = useState(false);
+    const [clientData, setClientData] = useState<AddClientType>({
+        first_name: '',
+        last_name: '',
+        email: '',
+        phone: ''
+    });
+
+    const [petData, setPetData] = useState<AddPetType>({
+        name: '',
+        pet_type_id: 1,
+        breed_id: 0,
+        size_id: 0,
+        age_id: 0,
+        pet_gender: 0
+    });
     const router = useRouter();
 
     useEffect(() => {
@@ -59,20 +80,20 @@ const ClientDentalReport = () => {
         setisLoadingClients(true);
 
         // This is a simulated fetch with a timeout to mimic an async call.
-        setTimeout(() => {
-            const simulatedClients: Client[] = [
-                { id: 1, first_name: 'Alice', last_name: 'Morlan', email: 'alice@example.com', phone: '756-7888-987' },
-                { id: 2, first_name: 'Bob', last_name: 'Smith', email: 'bob@example.com' }
-            ];
+        setTimeout(async () => {
+            const searchResult = await searchClient(value);
 
-            setClients(simulatedClients);
+            setClients(searchResult.data.result);
             setisLoadingClients(false);
         }, 1000); // 1 second delay to simulate loading
     };
 
     // Function to select a client
-    const handleClientSelect = (client: Client) => {
+    const handleClientSelect = async (client: Client) => {
         console.log('Selected client:', client);
+        // localStorage.setItem('selectedClientId', client.id);
+        const selectedClientPetResult = await selectedClientPet(client.id);
+        setPets(selectedClientPetResult.data.result);
         setSelectedClient(client);
     };
 
@@ -83,6 +104,53 @@ const ClientDentalReport = () => {
 
     const handleCancel = () => {
         setCreatePet(!createPet);
+    };
+
+    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const {name, value} = event.target;
+        setClientData((prevData: AddClientType) => ({
+            ...prevData,
+            [name]: value
+        }));
+    }
+
+    const handlePetNameChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const {name, value} = event.target;
+        setPetData((prevData: AddPetType) => ({
+            ...prevData,
+            [name]: value
+        }));
+    }
+
+    const handlePetChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const {name, value} = event.target;
+        setPetData((prevData: AddPetType) => ({
+            ...prevData,
+            [name]: value
+        }));
+    }
+
+    const handlePetTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const {name, value} = event.target;
+        setPetData((prevData: AddPetType) => ({
+            ...prevData,
+            [name]: value
+        }));
+    }
+
+    const addNewClient = async () => {
+        const result = await addClient(clientData, petData);
+        if (result.data.result == 0) {
+            console.log("already exist registered user");
+        } else {
+            console.log("Successful");
+        }
+    }
+
+    const handleAddPetChange = async () => {
+        const result = await addNewPet(petData, selectedClient?.id);
+        setPets(prevItems => [...prevItems, result.data.result]);
+        handleCancel();
     }
 
     //Component to show "search" clients
@@ -104,6 +172,7 @@ const ClientDentalReport = () => {
     const SelectedClientContent = () => {
         return (
             <SelectedClient
+                pets={pets}
                 selectedClient={selectedClient}
                 searchTerm={searchTerm}
                 isLoadingClients={isLoadingClients}
@@ -117,14 +186,26 @@ const ClientDentalReport = () => {
 
     const CreateClientContent = () => {
         return (
-            <NewClient />
+            <NewClient 
+                clientData = {clientData}
+                petData = {petData}
+                handleChange = {handleChange}
+                handlePetNameChange = {handlePetNameChange}
+                handlePetChange = {handlePetChange}
+                handlePetTypeChange = {handlePetTypeChange}
+            />
         )
     }
 
     const AddPetContent = () => {
         return (
-            <AddPet 
+            <AddPet
+                petData = {petData}
                 handleCancel={handleCancel}
+                handlePetNameChange = {handlePetNameChange}
+                handlePetChange = {handlePetChange}
+                handlePetTypeChange = {handlePetTypeChange}
+                handleAddPetChange = {handleAddPetChange}
             />
         )
     }
@@ -150,13 +231,25 @@ const ClientDentalReport = () => {
                         Back
                     </Button>
                 }
-                <Button
-                    size={'lg'}
-                    className='bg-teal-400 transition-all duration-300'
-                    onClick={handleContinue}
-                >
-                    Continue
-                </Button>
+                {createClient 
+                    ?
+                    <Button
+                        size={'lg'}
+                        className='bg-teal-400 transition-all duration-300'
+                        onClick={addNewClient}
+                    >
+                        Continue
+                    </Button>
+                    :
+                    <Button
+                        size={'lg'}
+                        className='bg-teal-400 transition-all duration-300'
+                        onClick={handleContinue}
+                    >
+                        Continue
+                    </Button>
+                }
+                
             </div>
         </div>
     );

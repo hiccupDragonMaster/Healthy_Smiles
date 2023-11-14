@@ -4,6 +4,6 @@ export type User = {
     last_name: string;
     email: string;
     phone?: string;
-    role: string;
+    role: string | null;
     access_token: string;
 };

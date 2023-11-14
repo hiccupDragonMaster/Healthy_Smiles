@@ -1,6 +1,7 @@
 'use client';
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, AuthContextProps } from '../types';
+import { useRouter } from 'next/navigation';
 
 interface AuthProviderProps {
     children: ReactNode;
@@ -10,6 +11,8 @@ const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
+
+    const router = useRouter();
 
     const handleTokenExpiry = async () => {
         try {
@@ -64,7 +67,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             if (!response.ok || !data.success) {
                 throw new Error(data.message || 'Failed to log in.');
             }
-
             localStorage.setItem('authToken', data.user.access_token);
             setUser(data.user);
         } catch (error) {
@@ -80,6 +82,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const logout = () => {
         localStorage.removeItem('authToken');
         setUser(null);
+        router.push('/');
     };
 
     return (

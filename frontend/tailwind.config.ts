@@ -22,10 +22,6 @@ const config: Config = {
         'addPetButton': '18.5rem'
       }
     },
-
-    fontFamily: {
-      'addPet': ['Inter'],
-    }
   },
   plugins: [
     require("flowbite/plugin")

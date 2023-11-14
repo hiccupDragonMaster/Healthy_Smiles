@@ -1,9 +1,11 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Avatar, Dropdown, Navbar } from 'flowbite-react';
 import { useSidebarContext } from '@/contexts/SidebarContext';
 import { HiUser, HiMenu, HiX } from 'react-icons/hi';
+import { useAuth } from '@/contexts/authContext';
 
 type NavbarProps = {
     navbarType?: 'dropdown' | 'simple';
@@ -12,6 +14,7 @@ type NavbarProps = {
 };
 
 export default function NavbarComponent({ navbarType = 'dropdown', exitLink, titleNav }: NavbarProps) {
+    const user = useAuth();
     const router = useRouter();
     const { isOpenOnSmallScreens, isPageWithSidebar, setOpenOnSmallScreens } =
         useSidebarContext();
@@ -26,13 +29,14 @@ export default function NavbarComponent({ navbarType = 'dropdown', exitLink, tit
                 }
             >
                 <Dropdown.Header>
-                    <span className="block text-sm">Bonnie Green {HiUser}</span>
-                    <span className="block truncate text-sm font-medium">name@flowbite.com</span>
+                    <span className="block text-sm">{user.user?.first_name} {user.user?.last_name} {HiUser}</span>
+                    <span className="block truncate text-sm font-medium">{user.user?.email}</span>
                 </Dropdown.Header>
                 {/*
                     <Dropdown.Item>Dashboard</Dropdown.Item>
                     */}
                 <Dropdown.Item onClick={() => {
+                    // user.logout;
                     localStorage.removeItem('authToken'); // Remove user from local storage on logout
                     router.push('/'); // Redirect to homepage
                 }}>Sign out</Dropdown.Item>

@@ -72,3 +72,6 @@ h2{
 .hide-scrollbar::-webkit-scrollbar {
     display: none;
 }
+.first-letter-uppercase::first-letter {
+    @apply uppercase;
+}

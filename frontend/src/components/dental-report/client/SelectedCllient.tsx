@@ -3,9 +3,11 @@ import { HiSearch, HiPlus, HiUserCircle } from 'react-icons/hi';
 import { Label, Radio } from 'flowbite-react';
 import { Client } from '@/types/Client';
 import { getInitials } from '@/app/utils/Helpers';
+import { ResponsePetType } from '@/types/Pet';
 
 
 interface Props {
+    pets: ResponsePetType[];
     selectedClient: Client | null;
     isLoadingClients: boolean;
     searchTerm: string;
@@ -55,23 +57,21 @@ export default function SelectClient(props: Props) {
                 </div>
 
                 <div className="client_pets_list">
-                    <div className="item-pet-list rounded-lg border border-gray-200 mb-4">
-                        <Label htmlFor="pet-1" className="pet-label-card w-full h-full relative block py-[12px] px-[14px] pl-9 cursor-pointer">
-                            <Radio size={6} className="absolute left-3 top-4 !ring-offset-0 focus:ring-opacity-0" color="gray" id="pet-1" name="pet" value="Pet 1"/>
-                            <h4 className="text-md text-gray-900 font-medium">Archer</h4>
-                            <p className="text-sm font-regurlar text-gray-500">Poodle · Medium</p>
-                            <Badge className="inline-flex absolute right-3 top-4" size="sm" color="dog">Dog</Badge>
-                        </Label>
-                    </div>
-
-                    <div className="item-pet-list rounded-lg border border-gray-200">
-                        <Label htmlFor="pet-2" className="pet-label-card w-full h-full relative block py-[12px] px-[14px] pl-9 cursor-pointer">
-                            <Radio className="absolute left-3 top-4 !ring-offset-0 focus:ring-opacity-0" color="gray" id="pet-2" name="pet" value="Pet 2" />
-                            <h4 className="text-md text-gray-900 font-medium">Archer</h4>
-                            <p className="text-sm font-regurlar text-gray-500">Poodle · Medium</p>
-                            <Badge className="inline-flex absolute right-3 top-4" size="sm" color="cat">Cat</Badge>
-                        </Label>
-                    </div>
+                    {props.pets.length > 0 && props.pets.map((item, index) => (
+                        <div className={`item-pet-list rounded-lg border border-gray-200 ${index == 0 ? '' : 'my-4' }`} key={index}>
+                            <Label htmlFor={`${item.type == 'dog' ? 'pet-1' : 'pet-2'}`} className="pet-label-card w-full h-full relative block py-[12px] px-[14px] pl-9 cursor-pointer">
+                                {item.type == 'dog' 
+                                    ? 
+                                    <Radio size={6} className="absolute left-3 top-4 !ring-offset-0 focus:ring-opacity-0" color="gray" id="pet-1" name="pet" value="Pet 1"/>
+                                    :
+                                    <Radio className="absolute left-3 top-4 !ring-offset-0 focus:ring-opacity-0" color="gray" id="pet-2" name="pet" value="Pet 2" />
+                                }
+                                <h4 className="text-md text-gray-900 font-medium first-letter-uppercase">{item.name}</h4>
+                                <p className="text-sm font-regurlar text-gray-500 first-letter-uppercase">{item.breed} · {item.size}</p>
+                                <Badge className="inline-flex absolute right-3 top-4" size="sm" color={item.type}><p className="first-letter-uppercase">{item.type}</p></Badge>
+                            </Label>
+                        </div>
+                    ))}
                 </div>
                 
                 <Button
