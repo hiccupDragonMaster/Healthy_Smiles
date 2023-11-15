@@ -7,7 +7,7 @@ class Pet extends Model
 {
     protected $table = 'pets';
 
-    protected $fillable = ['name', 'pet_type_id', 'breed_id', 'size_id', 'age_id', 'client_id'];
+    protected $fillable = ['name', 'pet_type_id', 'breed_id', 'size_id', 'age_id', 'client_id', 'gender_id'];
 
     public function client()
     {
@@ -31,7 +31,7 @@ class Pet extends Model
 
     public function gender()
     {
-        return $this->belongsTo(PetGender::class);
+        return $this->belongsTo(PetGender::class, 'gender_id');
     }
 
     public function age()
