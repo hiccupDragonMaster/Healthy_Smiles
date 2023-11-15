@@ -9,7 +9,6 @@ import { AddPetType } from "@/types/Pet";
 import { getGender, getAge, getSize, getBreed } from '@/api/item';
 import { AgeType, BreedType, GenderType, SizeType } from '@/types/Item';
 
-
 interface Props {
     petData: AddPetType;
     handleCancel: () => void;
@@ -35,16 +34,18 @@ export default function AddPet(props: Props) {
     }, [props.petData.pet_type_id]);
 
     const init = async () => {
-        const {data: {data: genderData}} = await getGender();
-        const {data: {data: ageData}} = await getAge();
-        const {data: {data: sizeData}} = await getSize();
+        const authToken = localStorage.getItem('authToken');
+        const {data: {data: genderData}} = await getGender(authToken);
+        const {data: {data: ageData}} = await getAge(authToken);
+        const {data: {data: sizeData}} = await getSize(authToken);
         genderData && setGender(genderData);
         ageData && setAge(ageData);
         sizeData && setSize(sizeData);
     }
 
     const getAllBreed = async (id: number) => {
-        const {data: {data: breedData}} = await getBreed(id);
+        const authToken = localStorage.getItem('authToken');
+        const {data: {data: breedData}} = await getBreed(id, authToken);
         breedData && setBreed(breedData);
     }
 
@@ -75,7 +76,7 @@ export default function AddPet(props: Props) {
                 </div>
                 <div className="mt-3">
                     <Label className='label-form' htmlFor="genre" value="Genre" />
-                    <Select id="genre" className="mt-2" name="pet_gender" value={props.petData.pet_gender} onChange={props.handlePetChange} required>
+                    <Select id="genre" className="mt-2" name="gender_id" value={props.petData.gender_id} onChange={props.handlePetChange} required>
                         <option className="select-option font-normal" value={0}>Select an option</option>
                         {gender.map((item, index) => (
                             <option className="select-option font-normal" value={item.id} key={index}>{item.name}</option>

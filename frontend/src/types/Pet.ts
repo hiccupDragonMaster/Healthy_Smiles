@@ -4,7 +4,7 @@ export type AddPetType = {
     breed_id: number;
     size_id: number;
     age_id: number;
-    pet_gender: number;
+    gender_id: number;
 }
 
 export type RequestPetType = {
@@ -13,7 +13,7 @@ export type RequestPetType = {
     breed_id: number;
     size_id: number;
     age_id: number;
-    pet_gender: number;
+    gender_id: number;
     client_id: number;
 }
 

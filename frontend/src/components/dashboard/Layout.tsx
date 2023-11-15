@@ -20,7 +20,7 @@ const Layout: React.FC<LayoutProps> = ({ children, showSidebar = true, navbarTyp
         <SidebarProvider>
             <div className='flex h-screen relative flex-col'>
                 <NavbarWithDropdown navbarType={navbarType} exitLink={exitLink} titleNav={titleNav} />
-                <div className="h-full flex">
+                <div className="h-5/6 hide-scrollbar flex overflow-y-scroll">
                     {showSidebar && <SidebarList />}
                     {/* Main content */}
                     <main className={`flex-1 ${bottomNav ? 'pb-16' : ''}`}>

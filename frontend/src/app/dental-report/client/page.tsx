@@ -15,6 +15,11 @@ import { addClient } from '@/api/client';
 import { searchClient } from '@/api/search';
 import { addNewPet, selectedClientPet } from '@/api/pet';
 
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+import { clientDataValidation, petDataValidation } from '@/validation/validation';
+
 const ClientDentalReport = () => {
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
     const [createClient, setCreateClient] = useState(false);
@@ -38,7 +43,7 @@ const ClientDentalReport = () => {
         breed_id: 0,
         size_id: 0,
         age_id: 0,
-        pet_gender: 0
+        gender_id: 0
     });
     const router = useRouter();
 
@@ -56,7 +61,6 @@ const ClientDentalReport = () => {
     }, []);
 
     const handleContinue = () => {
-        console.log("Continue clicked");
         router.push('/dental-report/create');
     }
 
@@ -69,6 +73,7 @@ const ClientDentalReport = () => {
     }
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const authToken = localStorage.getItem('authToken');
         const value = e.target.value;
         setSearchTerm(value);
 
@@ -81,8 +86,7 @@ const ClientDentalReport = () => {
 
         // This is a simulated fetch with a timeout to mimic an async call.
         setTimeout(async () => {
-            const searchResult = await searchClient(value);
-
+            const searchResult = await searchClient(value, authToken);
             setClients(searchResult.data.result);
             setisLoadingClients(false);
         }, 1000); // 1 second delay to simulate loading
@@ -90,9 +94,8 @@ const ClientDentalReport = () => {
 
     // Function to select a client
     const handleClientSelect = async (client: Client) => {
-        console.log('Selected client:', client);
-        // localStorage.setItem('selectedClientId', client.id);
-        const selectedClientPetResult = await selectedClientPet(client.id);
+        const authToken = localStorage.getItem('authToken');
+        const selectedClientPetResult = await selectedClientPet(client.id, authToken);
         setPets(selectedClientPetResult.data.result);
         setSelectedClient(client);
     };
@@ -139,17 +142,66 @@ const ClientDentalReport = () => {
     }
 
     const addNewClient = async () => {
-        const result = await addClient(clientData, petData);
-        if (result.data.result == 0) {
-            console.log("already exist registered user");
+        const clientValidateResult = await clientDataValidation(clientData);
+        const petValidateResult = await petDataValidation(petData);
+        if (clientValidateResult.length > 0) {
+            toast(clientValidateResult.toString(), {
+                position: toast.POSITION.TOP_RIGHT,
+                autoClose: 5000,
+                hideProgressBar: false,
+                progressStyle: { background: 'red' }
+            });
+        } else if (petValidateResult.length > 0) {
+            toast(petValidateResult.toString(), {
+                position: toast.POSITION.TOP_RIGHT,
+                autoClose: 5000,
+                hideProgressBar: false,
+                progressStyle: { background: 'red' }
+            });
         } else {
-            console.log("Successful");
+            const authToken = localStorage.getItem('authToken');
+            const result = await addClient(clientData, petData, authToken);
+            if (result.data.result == 0) {
+                toast('Already exist registered user!', {
+                    position: toast.POSITION.TOP_RIGHT,
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    progressStyle: { background: 'red' }
+                });
+            } else {
+                toast('Register new client data successful!', {
+                    position: toast.POSITION.TOP_RIGHT,
+                    autoClose: 2000,
+                    hideProgressBar: false,
+                    progressStyle: { background: '#44B9CB' }
+                });
+                setTimeout(() => {
+                    handleContinue();
+                }, 2500);
+            }
         }
     }
 
     const handleAddPetChange = async () => {
-        const result = await addNewPet(petData, selectedClient?.id);
-        setPets(prevItems => [...prevItems, result.data.result]);
+        const petValidateResult = await petDataValidation(petData);
+        if (petValidateResult.length > 0) {
+            toast(petValidateResult.toString(), {
+                position: toast.POSITION.TOP_RIGHT,
+                autoClose: 5000,
+                hideProgressBar: false,
+                progressStyle: { background: 'red' }
+            });
+        } else {
+            const authToken = localStorage.getItem('authToken');
+            const result = await addNewPet(petData, selectedClient?.id, authToken);
+            setPets(prevItems => [...prevItems, result.data.result]);
+            toast('Register new pet data successful!', {
+                position: toast.POSITION.TOP_RIGHT,
+                autoClose: 5000,
+                hideProgressBar: false,
+                progressStyle: { background: '#44B9CB' }
+            });
+        }
         handleCancel();
     }
 
@@ -212,7 +264,8 @@ const ClientDentalReport = () => {
 
     //page content
     const content = (
-        <div className='hide-scrollbar overflow-auto h-5/6'>
+        <div className='h-4/5'>
+            <ToastContainer />
             <div className='flex justify-between items-center p-6'>
                 <div className="flex justify-center w-full">
                     <div className="w-full md:w-6/12 lg:w-4/12 md:mx-auto mt-8 container-inner-centered">
@@ -221,9 +274,10 @@ const ClientDentalReport = () => {
                     </div>
                 </div>
             </div>
-            <div className={`${createClient ? 'justify-between' : 'justify-end'} flex p-5 border items-center fixed bottom-0 left-0 w-full bg-white`}>
-                {createClient && 
+            <div className={`${(createClient || selectedClient) ? 'justify-between' : 'justify-end'} flex p-5 border items-center fixed bottom-0 left-0 w-full bg-white`}>
+                {(createClient || selectedClient) &&
                     <Button
+                        href='/dental-report/client'
                         size={'lg'}
                         color="light"
                         className='button-action'

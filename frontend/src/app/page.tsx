@@ -42,42 +42,6 @@ export default function Home() {
     } else {
       console.warn("Login function is not available");
     }
-
-
-    /*
-
-    try {
-      const response = await fetch('http://hs-dental-reports.test/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong!');
-      }
-
-      if (data.success) {
-        localStorage.setItem('authToken', data.user.access_token);
-        window.location.href = '/dashboard';
-      }
-
-      // Handle successful login here, maybe set user data or redirect
-    } catch (error) {
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-      } else {
-        setErrorMessage('An error occurred.');
-      }
-    }
-    */
   };
 
   return (
